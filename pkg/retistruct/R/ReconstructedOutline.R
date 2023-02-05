@@ -452,7 +452,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       opt <- list()
       opt$p <- c(phi0, phi[-Rsett], lambda[-i0t])
       message(paste("optim phi0", phi0))
-      message(paste("optim p1", p[1]))
+      message(paste("optim p1", opt$p[1]))
       opt$conv <- 1
       count <- 0
       while (opt$conv) {
