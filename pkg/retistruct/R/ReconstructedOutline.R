@@ -479,10 +479,10 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
 
         ## Decode p vector
         phi0         <- opt$p[1]
-        phi          <- rep(phi0, Nt)
-        phi[-Rsett]  <- opt$p[2:Nphi]
-        lambda       <- rep(lambda0, Nt)
-        lambda[-i0t] <- opt$p[Nphi+1:Nt]
+        phi          <- rep(phi0, Nt+1)
+        phi[-Rsett]  <- opt$p[2:Nphi+1]
+        lambda       <- rep(lambda0, Nt+1)
+        lambda[-i0t] <- opt$p[Nphi+2:Nt]
 
         self$phi0 <- phi0
         self$phi <- phi

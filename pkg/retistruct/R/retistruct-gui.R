@@ -858,7 +858,7 @@ This work was supported by a Programme Grant from the Wellcome Trust (G083305). 
   g.move    <- gWidgets2::gbutton("Move Point",  handler=h.move,    container=g.editor)
   g.mark.n  <- gWidgets2::gbutton("Mark nasal",  handler=h.mark.n,  container=g.editor)
   g.mark.d  <- gWidgets2::gbutton("Mark dorsal", handler=h.mark.d,  container=g.editor)
-  g.mark.od <- gWidgets2::gbutton("Mark ODtest25",     handler=h.mark.od, container=g.editor)
+  g.mark.od <- gWidgets2::gbutton("Mark OD251",     handler=h.mark.od, container=g.editor)
   
   ## Editting of data
   g.data.frame <- gWidgets2::gframe("Data", container=g.editor, horizontal=FALSE)
