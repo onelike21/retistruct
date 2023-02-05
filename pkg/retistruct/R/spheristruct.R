@@ -231,7 +231,7 @@ dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
 
   dE.dphi    <- rowSums(dE.dp * dp.dphi)
   dE.dlambda <- rowSums(dE.dp * dp.dlambda)
-  dE.dphi0 <- rowSums(phi0)
+  dE.dphi0 <- rowSums(dE.dp * phi0)
 
   ## Return, omitting uncessary indices
   return(c(dE.dphi0, dE.dphi[-Rset], dE.dlambda[-i0]))
