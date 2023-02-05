@@ -114,7 +114,8 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## Transform the rim set
       ## ol$orderRset()
       self$ol <- ol
-      self$phi0 <- ol$phi0
+      message(paste("outlinephi0", self$phi0))
+      ##self$phi0 <- ol$phi0
       self$lambda0 <- ol$lambda0
       
       report("Merging points...")
@@ -449,6 +450,8 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## Optimisation and plotting
       opt <- list()
       opt$p <- c(phi0, phi[-Rsett], lambda[-i0t])
+      message(paste("optim phi0", phi0))
+      message(paste("optim p1", p[1]))
       opt$conv <- 1
       count <- 0
       while (opt$conv) {
@@ -480,9 +483,9 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         ## Decode p vector
         phi0         <- opt$p[1]
         phi          <- rep(phi0, Nt+1)
-        phi[-Rsett]  <- opt$p[2:Nphi+1]
+        phi[-Rsett]  <- opt$p[2:(Nphi+1)]
         lambda       <- rep(lambda0, Nt+1)
-        lambda[-i0t] <- opt$p[Nphi+2:Nt]
+        lambda[-i0t] <- opt$p[(Nphi+2):Nt]
 
         self$phi0 <- phi0
         self$phi <- phi

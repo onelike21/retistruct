@@ -152,12 +152,11 @@ fp <- function(x, x0) {
 E <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
               alpha=1, x0,  nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
-  message(paste("length of p", p))
   phi0 <- p[1]
   phi <- rep(phi0, N)
-  phi[-Rset] <- p[2:Nphi+1]
+  phi[-Rset] <- p[2:(Nphi+1)]
   lambda <- rep(lambda0, N)
-  lambda[-i0] <- p[Nphi+2:N]
+  lambda[-i0] <- p[(Nphi+2):N]
 
   ## Find cartesian coordinates of points
   P <- R * cbind(cos(phi)*cos(lambda),
@@ -204,9 +203,9 @@ dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
   message(paste("dEphi0", phi0))
   phi0 <- p[1]
   phi <- rep(phi0, N)
-  phi[-Rset] <- p[2:Nphi+1]
+  phi[-Rset] <- p[2:(Nphi+1)]
   lambda <- rep(lambda0, N)
-  lambda[-i0] <- p[Nphi+2:N]
+  lambda[-i0] <- p[(Nphi+2):N]
 
   cosp <- cos(phi)
   cosl <- cos(lambda)
