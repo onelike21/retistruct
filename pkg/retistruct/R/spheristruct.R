@@ -200,8 +200,8 @@ E <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
 dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
                alpha=1, x0, nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
-  ##message(paste("dEphi0", phi0))
-  message(paste("dEN", N))
+  message(paste("dEphi0", phi0))
+  ##message(paste("dEN", N))
   phi0 <- p[1]
   phi <- rep(phi0, N)
   phi[-Rset] <- p[2:(Nphi+1)]
@@ -233,7 +233,7 @@ dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
   dE.dlambda <- rowSums(dE.dp * dp.dlambda)
 
   ## Return, omitting uncessary indices
-  return(c(dE.dphi[-Rset], dE.dlambda[-i0]))
+  return(c(phi0, dE.dphi[-Rset], dE.dlambda[-i0]))
 }
 
 ##' The function that computes the energy (or error) of the
