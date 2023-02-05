@@ -115,7 +115,8 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## ol$orderRset()
       self$ol <- ol
       message(paste("outlinephi0", self$phi0))
-      ##self$phi0 <- ol$phi0
+      
+      self$phi0 <- ol$phi0
       self$lambda0 <- ol$lambda0
       
       report("Merging points...")
