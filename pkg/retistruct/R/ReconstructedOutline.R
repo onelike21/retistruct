@@ -451,8 +451,8 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## Optimisation and plotting
       opt <- list()
       opt$p <- c(phi0, phi[-Rsett], lambda[-i0t])
-      message(paste("optim phi0", phi0))
-      message(paste("optim p1", opt$p[1]))
+      ##message(paste("optim phi0", phi0))
+      ##message(paste("optim p1", opt$p[1]))
       opt$conv <- 1
       count <- 0
       while (opt$conv) {
@@ -483,10 +483,10 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
 
         ## Decode p vector
         phi0         <- opt$p[1]
-        phi          <- rep(phi0, Nt+1)
+        phi          <- rep(phi0, Nt)
         phi[-Rsett]  <- opt$p[2:(Nphi+1)]
-        lambda       <- rep(lambda0, Nt+1)
-        lambda[-i0t] <- opt$p[(Nphi+2):Nt]
+        lambda       <- rep(lambda0, Nt)
+        lambda[-i0t] <- opt$p[Nphi+2:Nt]
 
         self$phi0 <- phi0
         self$phi <- phi
