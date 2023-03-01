@@ -439,6 +439,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       lambda0 <- self$lambda0
       Tt <- self$Tt
       A <- self$ol$A
+      Atot <- self$ol$A.tot
       Cut <- self$Cut
       Ct <- self$Ct
       Lt <- self$Lt
@@ -459,16 +460,16 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         ## Optimise
         opt <- stats::optim(opt$p, E, gr=dE,
                             method=optim.method,
-                            T=Tt, A=A, Cu=Cut, C=Ct, L=Lt, B=Bt, R=R,
+                            T=Tt, A=A, Atot=Atot, Cu=Cut, C=Ct, L=Lt, B=Bt, R=R,
                             alpha=alpha,  N=Nt, x0=x0, nu=nu,
                             Rset=Rsett, i0=i0t, phi0=phi0, lambda0=lambda0, Nphi=Nphi,
                             verbose=FALSE, control=control)
 
         ## Report
-        E.tot <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt,  R=R, T=Tt, A=A,
+        E.tot <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt,  R=R, T=Tt, A=A, Atot=Atot,
                    alpha=alpha,  N=Nt, x0=x0, nu=nu,
                    Rset=Rsett, i0=i0t, phi0=phi0, lambda0=lambda0, Nphi=Nphi)
-        E.l <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt,  R=R, T=Tt, A=A,
+        E.l <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt,  R=R, T=Tt, A=A, Atot=Atot,
                  alpha=0,  N=Nt, x0=x0, nu=nu,
                  Rset=Rsett, i0=i0t, phi0=phi0, lambda0=lambda0, Nphi=Nphi)
 

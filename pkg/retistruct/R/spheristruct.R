@@ -149,7 +149,7 @@ fp <- function(x, x0) {
 ##' @return A single value, representing the energy of this particular
 ##' configuration
 ##' @author David Sterratt
-E <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
+E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
               alpha=1, x0,  nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
   phi0 <- p[1]
@@ -197,7 +197,7 @@ E <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
 ##' @return A vector representing the derivative of the energy of this
 ##' particular configuration with respect to the parameter vector
 ##' @author David Sterratt
-dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
+dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
                alpha=1, x0, nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
   ##message(paste("dEphi0", phi0))
@@ -220,6 +220,8 @@ dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
   ## Compute force in Cartesian coordinates
   dE.dp <- -Fcart(P, C, L, T, A, R,
                   alpha, x0, nu, verbose)
+  
+  dR.dphi0 <- (pi * cos(phi0) * (Atot^(1/2)))/((2 * pi * sin(phi0) + 1)^(3/2))
 
   ## Convert to Spherical coordinates
   dp.dphi <- R * cbind(-sinp * cosl,
@@ -228,13 +230,14 @@ dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
   dp.dlambda <- R * cbind(-cosp * sinl,
                           cosp * cosl,
                           0)
+  dp.dphi0 <- dR.dphi0 * cbind(cosp * cosl, cosp * sinl, sinp) + R
 
   dE.dphi    <- rowSums(dE.dp * dp.dphi)
   dE.dlambda <- rowSums(dE.dp * dp.dlambda)
-  dE.dphi0 <- rowSums(dE.dp * phi0)
+  dE.dphi0   <- rowSums(dE.dp * dp.dphi0)
 
   ## Return, omitting uncessary indices
-  return(c(dE.dphi0, dE.dphi[-Rset], dE.dlambda[-i0]))
+  return(c(dE.dphi0[1], dE.dphi[-Rset], dE.dlambda[-i0]))
 }
 
 ##' The function that computes the energy (or error) of the
@@ -257,7 +260,7 @@ dE <- function(p, Cu, C, L, B, T, A, R, Rset, i0, phi0, lambda0, Nphi, N,
 ##' @return A single value, representing the energy of this particular
 ##' configuration
 ##' @author David Sterratt
-Ecart <- function(P, Cu, L, T, A, R,
+Ecart <- function(P, Cu, L, T, A, Atot, R,
                   alpha=1, x0, nu=1, verbose=FALSE) {
   ## Compute elastic energy
 
