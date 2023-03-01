@@ -164,7 +164,7 @@ E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
                  sin(phi))
 
   ## Compute elastic energy
-  return(Ecart(P, Cu, L, T, A, R,
+  return(Ecart(P, Cu, L, T, A, Atot, R,
                alpha, x0, nu, verbose))
 
 }
