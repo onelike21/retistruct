@@ -33,7 +33,7 @@ retistruct.cli <- function(dataset, cpu.time.limit=Inf, outputdir=NA,
     }
   }
   ## Success
-  return(list(status=status, time=syst["user.self"], mess=mess, r=out))
+  return(list(status=status, time=syst["user.self"], mess=mess))
 }
 
 ##' This function processes a \code{dataset}, saving the
@@ -44,22 +44,42 @@ retistruct.cli <- function(dataset, cpu.time.limit=Inf, outputdir=NA,
 ##' @param dataset Path to dataset to process 
 ##' @param outputdir Directory in which to save any figures
 ##' @param device String representing device to print figures to
-##' @param titrate Whether to titrate or not
-##' @param matlab Whether to save to MATLAB or not
 ##' @author David Sterratt
 ##' @export
-retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf",
-                                   titrate=FALSE, matlab=TRUE) {
+retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
+                                   ## titrate=FALSE   ## FIXME: Issue #25: Titration
+                                   ) {
   ## Processing
   warn.opt <- getOption("warn")
   options(warn=1)
-  r <- retistruct.read.dataset(dataset)
-  r <- retistruct.read.markup(r)
-  r <- retistruct.reconstruct(r)
-  if (titrate) {
-    r$titrate()
+  
+  columns = c("initial_phi0","optimised_phi0","optimised_energy") 
+  df = data.frame(matrix(nrow = 0, ncol = length(columns))) 
+  colnames(df) = columns
+  
+  ##dice <- c(0, 10, 20, 30, 40)
+  for (i in seq(from=-90, to=90, by=10)){
+    r <- retistruct.read.dataset(dataset)
+    r <- retistruct.read.markup(r)
+    if (i < -80) {
+      i <- -89
+    }
+    if (i > 89) {
+      i <- 89
+    }
+    phi0 <<- i*pi/180
+    r$phi0 = phi0
+    r <- retistruct.reconstruct(r)
+    
+    df[nrow(df) + 1,] <- c(phi0, r$phi0, r$E.tot)
   }
+  
+  write.csv(df, "~/retistruct/output.csv", row.names=FALSE)
 
+  ## FIXME: Issue #25: Titration
+  ## if (titrate) {
+  ##   r$titration <- titrate.reconstructedOutline(r)
+  ## }
   ## Output
   retistruct.save.recdata(r)
   
@@ -69,13 +89,11 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf",
   }
 
   ## Export to matlab
-  if (matlab) {
-    message("Exporting to matlab")
-    retistruct.export.matlab(r)
-  }
-
+  message("Exporting to matlab")
+  retistruct.export.matlab(r)
   options(warn=warn.opt)
-  return(r)
+  
+  
 }
 
 ## retistruct.cli.basepath - generate a path based on the elided directory name

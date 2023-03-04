@@ -1,3 +1,14 @@
+## order.Rset(Rset, gf, hf)
+##
+## It is nice to create Rset as an ordered set
+order.Rset <- function(Rset, gf, hf) {
+  ## To to this, join the path from the first two members of the set.
+  R12 <- path(Rset[1], Rset[2], gf, hf)
+  R21 <- path(Rset[2], Rset[1], gf, hf)
+  Rset <- c(R12[-1], R21[-1])
+  return(Rset)
+}
+
 ##' Stretch the mesh in the flat retina to a circular outline
 ##'
 ##' @title Stretch mesh
@@ -152,6 +163,8 @@ fp <- function(x, x0) {
 E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
               alpha=1, x0,  nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
+  ##message(paste("area para", Atot))
+  
   phi0 <- p[1]
   phi <- rep(phi0, N)
   phi[-Rset] <- p[2:(Nphi+1)]
@@ -200,8 +213,6 @@ E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
 dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
                alpha=1, x0, nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
-  ##message(paste("dEphi0", phi0))
-  ##message(paste("dEN", N))
   phi0 <- p[1]
   phi <- rep(phi0, N)
   phi[-Rset] <- p[2:(Nphi+1)]
@@ -230,11 +241,15 @@ dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   dp.dlambda <- R * cbind(-cosp * sinl,
                           cosp * cosl,
                           0)
-  dp.dphi0 <- dR.dphi0 * cbind(cosp * cosl, cosp * sinl, sinp) + R
-
+  
+  dp.dphi0 <- dR.dphi0 * cbind(cosp * cosl, cosp * sinl, sinp) + R * cbind(-sinp * cosl, -sinp * sinl, cosp)
   dE.dphi    <- rowSums(dE.dp * dp.dphi)
   dE.dlambda <- rowSums(dE.dp * dp.dlambda)
   dE.dphi0   <- rowSums(dE.dp * dp.dphi0)
+  
+  ##message(paste("dEdphi-length", length(dE.dphi[-Rset])))
+  ##message(paste("dEdlambda-length", length(dE.dlambda[-i0])))
+  ##message(paste("dEdphi0-length", length(dE.dphi0)))
 
   ## Return, omitting uncessary indices
   return(c(dE.dphi0[1], dE.dphi[-Rset], dE.dlambda[-i0]))
@@ -378,7 +393,7 @@ Fcart <- function(P, C, L, T, A, R,
 ##' @param R Radius of sphere
 ##' @param Rset Indices of points on rim
 ##' @param i0 Index of fixed point
-##' @param phi0 FullCut-off of curtailed sphere in radians
+##' @param phi0 Cut-off of curtailed sphere in radians
 ##' @param lambda0 Longitude of fixed point on rim
 ##' @return Points projected back onto sphere
 ##' @author David Sterratt
