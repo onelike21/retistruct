@@ -58,7 +58,7 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
   colnames(df) = columns
   
   ##dice <- c(0, 10, 20, 30, 40)
-  for (i in seq(from=-90, to=90, by=10)){
+  for (i in seq(from=-20, to=0, by=10)){
     r <- retistruct.read.dataset(dataset)
     r <- retistruct.read.markup(r)
     if (i < -80) {
@@ -72,6 +72,13 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
     r <- retistruct.reconstruct(r)
     
     df[nrow(df) + 1,] <- c(phi0, r$phi0, r$E.tot)
+    
+    retistruct.save.recdata(r)
+    
+    if (!is.na(outputdir)) {
+      message("Producing figures")
+      retistruct.cli.figure(dataset, outputdir, device=device, phi0 = i)
+    }
   }
   
   write.csv(df, "~/retistruct/output.csv", row.names=FALSE)
@@ -81,12 +88,7 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
   ##   r$titration <- titrate.reconstructedOutline(r)
   ## }
   ## Output
-  retistruct.save.recdata(r)
   
-  if (!is.na(outputdir)) {
-    message("Producing figures")
-    retistruct.cli.figure(dataset, outputdir, device=device)
-  }
 
   ## Export to matlab
   message("Exporting to matlab")
@@ -118,7 +120,7 @@ retistruct.cli.basepath <- function(dataset) {
 ##' @author David Sterratt
 retistruct.cli.figure <- function(dataset,
                                   outputdir, device="pdf", width=6, height=6,
-                                  res=100) {
+                                  res=100, phi0) {
   suppressMessages(r <- retistruct.read.recdata(list(dataset=dataset), check=FALSE))
   units <- NULL
   if (device!="pdf") {
@@ -139,9 +141,11 @@ retistruct.cli.figure <- function(dataset,
     basepath <- retistruct.cli.basepath(dataset)
     
     ## Flat plot
-    dev(file=file.path(outputdir, paste(basepath, "-flat", suffix, sep="")),
+    dev(file=file.path(outputdir, paste(phi0, "-flat", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(1, 1, 1, 1))
+    par(mar=c(3.0, 3.0, 1.5, 0.5))
+    par(mgp=c(1.5, 0.5, 0))
+    par(tcl=-0.3)
     flatplot(r, axt="n",
               datapoints=TRUE,
               landmarks=TRUE,
@@ -150,26 +154,30 @@ retistruct.cli.figure <- function(dataset,
               grid=TRUE,
               mesh=FALSE,
               strain=FALSE)
-    title(dataset)
+    title(paste("Flat plot with initial phi0:", phi0))
     dev.off()
 
     ## Polar plot with KDE contours
-    dev(file=file.path(outputdir, paste(basepath, "-polar-kde", suffix, sep="")),
+    dev(file=file.path(outputdir, paste(phi0, "-polar-kde", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(2, 2, 2, 2))
+    par(mar=c(3.0, 3.0, 1.5, 0.5))
+    par(mgp=c(1.5, 0.5, 0))
+    par(tcl=-0.3)
     projection(r, datapoint.contours=TRUE, grouped.contours=FALSE)
-    title(paste("KDE:", dataset))
+    title(paste("KDE with initial phi0:", phi0))
     if (!is.null(r$EOD)) {
       polartext(paste("OD displacement:", format(r$EOD, digits=3, nsmall=2), "deg"))
     }
     dev.off()
 
     ## Polar plot with KR contours
-    dev(file=file.path(outputdir, paste(basepath, "-polar-kr", suffix, sep="")),
+    dev(file=file.path(outputdir, paste(phi0, "-polar-kr", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(2, 2, 2, 2))
+    par(mar=c(3.0, 3.0, 1.5, 0.5))
+    par(mgp=c(1.5, 0.5, 0))
+    par(tcl=-0.3)
     projection(r, datapoint.contours=FALSE, grouped.contours=TRUE)
-    title(paste("KR:", dataset))
+    title(paste("KR with initial phi0:", phi0))
     if (!is.null(r$EOD)) {
       polartext(paste("OD displacement:", format(r$EOD, digits=3, nsmall=2), "deg"))
     }
@@ -177,9 +185,11 @@ retistruct.cli.figure <- function(dataset,
 
     
     ## Strain plot
-    dev(file=file.path(outputdir, paste(basepath, "-strain", suffix, sep="")),
+    dev(file=file.path(outputdir, paste(phi0, "-strain", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(1, 1, 1, 1))
+    par(mar=c(3.0, 3.0, 1.5, 0.5))
+    par(mgp=c(1.5, 0.5, 0))
+    par(tcl=-0.3)
     flatplot(r, axt="n",
               datapoints=FALSE,
               landmarks=FALSE,
@@ -188,18 +198,18 @@ retistruct.cli.figure <- function(dataset,
               grid=FALSE,
               mesh=FALSE,
               strain=TRUE)
-    title(dataset)
+    title(paste("Strain plot with initial phi0:", phi0))
     dev.off()
 
     ## l.vs.L plot
-    dev(file=file.path(outputdir, paste(basepath, "-strain-lvsL", suffix, sep="")),
+    dev(file=file.path(outputdir, paste(phi0, "-strain-lvsL", suffix, sep="")),
            width=width, height=height)
     par(mar=c(3.0, 3.0, 1.5, 0.5))
     par(mgp=c(1.5, 0.5, 0))
     par(tcl=-0.3)
     
     lvsLplot(r)
-    title(dataset)
+    title(paste("Strain plot-lvsL with initial phi0:", phi0))
     dev.off()
   }
 }
