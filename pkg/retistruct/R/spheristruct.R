@@ -170,6 +170,8 @@ E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   phi[-Rset] <- p[2:(Nphi+1)]
   lambda <- rep(lambda0, N)
   lambda[-i0] <- p[Nphi+2:N]
+  
+  R <- sqrt(Atot/(2*pi*(sin(phi0)+1)))
 
   ## Find cartesian coordinates of points
   P <- R * cbind(cos(phi)*cos(lambda),
@@ -218,6 +220,8 @@ dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   phi[-Rset] <- p[2:(Nphi+1)]
   lambda <- rep(lambda0, N)
   lambda[-i0] <- p[Nphi+2:N]
+  
+  R <- sqrt(Atot/(2*pi*(sin(phi0)+1)))
 
   cosp <- cos(phi)
   cosl <- cos(lambda)
@@ -232,7 +236,7 @@ dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   dE.dp <- -Fcart(P, C, L, T, A, R,
                   alpha, x0, nu, verbose)
   
-  dR.dphi0 <- (pi * cos(phi0) * (Atot^(1/2)))/((2 * pi * sin(phi0) + 1)^(3/2))
+  dR.dphi0 <- (pi * cos(phi0) * (Atot^(1/2)))/((2 * pi * (sin(phi0) + 1))^(3/2))
 
   ## Convert to Spherical coordinates
   dp.dphi <- R * cbind(-sinp * cosl,

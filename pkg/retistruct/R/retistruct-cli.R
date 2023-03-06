@@ -58,7 +58,7 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
   colnames(df) = columns
   
   ##dice <- c(0, 10, 20, 30, 40)
-  for (i in seq(from=-20, to=0, by=10)){
+  for (i in seq(from=0, to=70, by=10)){
     r <- retistruct.read.dataset(dataset)
     r <- retistruct.read.markup(r)
     if (i < -80) {
@@ -71,7 +71,9 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
     r$phi0 = phi0
     r <- retistruct.reconstruct(r)
     
-    df[nrow(df) + 1,] <- c(phi0, r$phi0, r$E.tot)
+    result_phi0 = (r$phi0*180)/pi 
+    
+    df[nrow(df) + 1,] <- c(i, result_phi0, r$E.tot)
     
     retistruct.save.recdata(r)
     
@@ -143,9 +145,7 @@ retistruct.cli.figure <- function(dataset,
     ## Flat plot
     dev(file=file.path(outputdir, paste(phi0, "-flat", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(3.0, 3.0, 1.5, 0.5))
-    par(mgp=c(1.5, 0.5, 0))
-    par(tcl=-0.3)
+    par(mar=c(1, 1, 1, 1))
     flatplot(r, axt="n",
               datapoints=TRUE,
               landmarks=TRUE,
@@ -153,17 +153,16 @@ retistruct.cli.figure <- function(dataset,
               stitch=TRUE,
               grid=TRUE,
               mesh=FALSE,
-              strain=FALSE)
+              strain=FALSE,
+             image=FALSE)
     title(paste("Flat plot with initial phi0:", phi0))
     dev.off()
 
     ## Polar plot with KDE contours
     dev(file=file.path(outputdir, paste(phi0, "-polar-kde", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(3.0, 3.0, 1.5, 0.5))
-    par(mgp=c(1.5, 0.5, 0))
-    par(tcl=-0.3)
-    projection(r, datapoint.contours=TRUE, grouped.contours=FALSE)
+    par(mar=c(2, 2, 2, 2))
+    projection(r, datapoint.contours=TRUE, grouped.contours=FALSE, image=FALSE)
     title(paste("KDE with initial phi0:", phi0))
     if (!is.null(r$EOD)) {
       polartext(paste("OD displacement:", format(r$EOD, digits=3, nsmall=2), "deg"))
@@ -173,10 +172,8 @@ retistruct.cli.figure <- function(dataset,
     ## Polar plot with KR contours
     dev(file=file.path(outputdir, paste(phi0, "-polar-kr", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(3.0, 3.0, 1.5, 0.5))
-    par(mgp=c(1.5, 0.5, 0))
-    par(tcl=-0.3)
-    projection(r, datapoint.contours=FALSE, grouped.contours=TRUE)
+    par(mar=c(2, 2, 2, 2))
+    projection(r, datapoint.contours=FALSE, grouped.contours=TRUE, image=FALSE)
     title(paste("KR with initial phi0:", phi0))
     if (!is.null(r$EOD)) {
       polartext(paste("OD displacement:", format(r$EOD, digits=3, nsmall=2), "deg"))
@@ -187,9 +184,7 @@ retistruct.cli.figure <- function(dataset,
     ## Strain plot
     dev(file=file.path(outputdir, paste(phi0, "-strain", suffix, sep="")),
            width=width, height=height)
-    par(mar=c(3.0, 3.0, 1.5, 0.5))
-    par(mgp=c(1.5, 0.5, 0))
-    par(tcl=-0.3)
+    par(mar=c(1, 1, 1, 1))
     flatplot(r, axt="n",
               datapoints=FALSE,
               landmarks=FALSE,
@@ -197,7 +192,8 @@ retistruct.cli.figure <- function(dataset,
               stitch=FALSE,
               grid=FALSE,
               mesh=FALSE,
-              strain=TRUE)
+              strain=TRUE,
+             image=FALSE)
     title(paste("Strain plot with initial phi0:", phi0))
     dev.off()
 

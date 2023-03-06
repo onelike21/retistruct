@@ -448,6 +448,9 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       i0t <- self$i0t
       Nt <- nrow(self$Pt)
       Nphi <- Nt - length(Rsett)
+      
+      message(paste("Initial Atot", Atot))
+      message(paste("Initial R", R))
 
       ## Optimisation and plotting
       opt <- list()
@@ -487,9 +490,11 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         lambda       <- rep(lambda0, Nt)
         lambda[-i0t] <- opt$p[Nphi+2:Nt]
         
-        message(paste("selfphi0", length(phi0)))
-        message(paste("selfphi", length(phi[-Rsett])))
-        message(paste("selflambda", length(lambda[-i0t])))
+        R <- sqrt(Atot/(2*pi*(sin(phi0)+1)))
+        
+        ##message(paste("selfphi0", length(phi0)))
+        ##message(paste("selfphi", length(phi[-Rsett])))
+        ##message(paste("selflambda", length(lambda[-i0t])))
         
         self$phi0 <- phi0
         self$phi <- phi
@@ -500,6 +505,12 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         self$E.l <- E.l
         self$mean.strain    <- mean(abs(self$getStrains()$spherical$strain))
         self$mean.logstrain <- mean(abs(self$getStrains()$spherical$logstrain))
+        self$R <- R
+        
+        message(paste("result phi0", phi0))
+        atot = (R^2)*(2*pi*(sin(phi0)+1))
+        message(paste("Result R", self$R))
+        message(paste("caculated Atot", atot))
         
         ## Plot
         if (plot.3d) {
@@ -523,7 +534,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
                      image=FALSE)
         }
       }
-      message(paste("result phi0", phi0))
+      
     },
     ##' @description Optimise the mapping from the flat outline to the sphere
     ##' @param alpha Area penalty scaling coefficient
