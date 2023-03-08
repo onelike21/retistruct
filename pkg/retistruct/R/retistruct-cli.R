@@ -58,7 +58,7 @@ retistruct.cli.process <- function(dataset, outputdir=NA, device="pdf"
   colnames(df) = columns
   
   ##dice <- c(0, 10, 20, 30, 40)
-  for (i in seq(from=0, to=70, by=10)){
+  for (i in seq(from=-90, to=90, by=5)){
     r <- retistruct.read.dataset(dataset)
     r <- retistruct.read.markup(r)
     if (i < -80) {

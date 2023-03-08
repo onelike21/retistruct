@@ -236,7 +236,7 @@ dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   dE.dp <- -Fcart(P, C, L, T, A, R,
                   alpha, x0, nu, verbose)
   
-  dR.dphi0 <- (pi * cos(phi0) * (Atot^(1/2)))/((2 * pi * (sin(phi0) + 1))^(3/2))
+  dR.dphi0 <- (-1/2)*((sin(phi0)+1)^(-3/2))*cos(phi0)*((Atot/(2*pi))^(1/2))
 
   ## Convert to Spherical coordinates
   dp.dphi <- R * cbind(-sinp * cosl,
@@ -247,13 +247,16 @@ dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
                           0)
   
   dp.dphi0 <- dR.dphi0 * cbind(cosp * cosl, cosp * sinl, sinp) + R * cbind(-sinp * cosl, -sinp * sinl, cosp)
+  
   dE.dphi    <- rowSums(dE.dp * dp.dphi)
   dE.dlambda <- rowSums(dE.dp * dp.dlambda)
   dE.dphi0   <- rowSums(dE.dp * dp.dphi0)
   
-  ##message(paste("dEdphi-length", length(dE.dphi[-Rset])))
-  ##message(paste("dEdlambda-length", length(dE.dlambda[-i0])))
-  ##message(paste("dEdphi0-length", length(dE.dphi0)))
+  #message(paste("dEdphi0-length", length(dE.dphi0)))
+  #message(paste("dEdlambda-length", length(dE.dlambda)))
+  #message(paste("dEdphi-length", length(dE.dphi)))
+  
+  ##message(paste("dEdphi0  ", dE.dphi0))
 
   ## Return, omitting uncessary indices
   return(c(dE.dphi0[1], dE.dphi[-Rset], dE.dlambda[-i0]))

@@ -449,8 +449,8 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       Nt <- nrow(self$Pt)
       Nphi <- Nt - length(Rsett)
       
-      message(paste("Initial Atot", Atot))
-      message(paste("Initial R", R))
+      ##message(paste("Initial Atot", Atot))
+      ##message(paste("Initial R", R))
 
       ## Optimisation and plotting
       opt <- list()
@@ -507,10 +507,10 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         self$mean.logstrain <- mean(abs(self$getStrains()$spherical$logstrain))
         self$R <- R
         
-        message(paste("result phi0", phi0))
-        atot = (R^2)*(2*pi*(sin(phi0)+1))
-        message(paste("Result R", self$R))
-        message(paste("caculated Atot", atot))
+        #message(paste("result phi0", phi0))
+        #atot = (R^2)*(2*pi*(sin(phi0)+1))
+        #message(paste("Result R", self$R))
+        #message(paste("caculated Atot", atot))
         
         ## Plot
         if (plot.3d) {
@@ -566,6 +566,9 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## Optimisation and plotting
       opt <- list()
       opt$x <- sphere.spherical.to.sphere.cart(cbind(phi=phi, lambda=lambda), R)
+      
+      message("opt-x", opt$x)
+      
       opt$conv <- 1
 
       ## Compute "mass" for each node
