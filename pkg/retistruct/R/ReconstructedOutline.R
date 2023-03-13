@@ -1,3 +1,7 @@
+if(!require('optimization')) {
+  install.packages('optimization')
+  library('optimization')
+}
 ##' Class containing functions to reconstruct \link{StitchedOutline}s
 ##' and store the associated data
 ##'
@@ -338,6 +342,8 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       Cut <- self$Cut
       Lt <- self$Lt
       phi0 <- self$phi0
+      
+      #message(paste("Phi0", (phi0*180)/pi))
       lambda0 <- self$lambda0
       
       Nt <- nrow(self$Pt)
@@ -378,6 +384,78 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       self$phi0 <- phi0
       self$lambda0 <- lambda0
       self$Ps <- Ps
+      
+      # Test: Initialise parameters - Random search
+      Tt <- self$Tt
+      A <- self$ol$A
+      Atot <- self$ol$A.tot
+      Cut <- self$Cut
+      Ct <- self$Ct
+      Lt <- self$Lt
+      Bt <- self$Bt
+      Rsett <- self$Rsett
+      i0t <- self$i0t
+      Nt <- nrow(self$Pt)
+      Nphi <- Nt - length(Rsett)
+      
+      alpha=4
+      x0=0.5
+      nu=1
+      
+      #phi0_range <- seq((-89/180)*pi, (89/180)*pi, length.out = 2500)
+      #results <- vector("numeric", length(phi0_range))
+      
+      #for (i in 1:length(phi0_range)) {
+        #tphi0 <- phi0_range[i]
+        
+        #tphi <- -pi/2 + sqrt(x^2 + y^2)*(tphi0+pi/2)
+        #tphi[Rsett] <- tphi0
+        
+        #p <- c(tphi0, tphi[-Rsett], lambda[-i0t])
+        #result <- E(p, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
+        #            alpha=alpha,  N=Nt, x0=x0, nu=nu,
+        #            Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+        #print(result)
+        #results[i] <- result
+     # }
+      #optimal_phi0 <- phi0_range[which.min(results)]
+      #print(min(results))
+     # print(optimal_phi0)
+      
+      # Simulated Annealing (hyper-heuristics)
+      eval_E <- function(x){
+        tphi <- -pi/2 + sqrt(x^2 + y^2)*(x+pi/2)
+        tphi[Rsett] <- x
+        tp = c(x, tphi[-Rsett], lambda[-i0t])
+        y <- E(tp, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
+                           alpha=alpha,  N=Nt, x0=x0, nu=nu,
+                           Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+      }
+      
+      optsa <- optim_sa(fun = eval_E,
+               start = c(0),
+               lower = c(-pi/2),
+               upper = c(pi/2),
+               trace = TRUE,
+               control = list(dyn_rf = FALSE,
+                              rf = 1.5,
+                              t0 = 1500,
+                              nlimit = 100,
+                              r = 0.5,
+                              t_min = 0.1
+               )
+      )
+      
+      print(optsa$par)
+      print(optsa$function_value)
+      
+      optimal_phi0 <- optsa$par
+      
+      self$phi0 <- optimal_phi0
+      phi <- -pi/2 + sqrt(x^2 + y^2)*(optimal_phi0+pi/2)
+      phi[Rsett] <- optimal_phi0
+      self$phi <- phi
+      
     },
     ##' @description Return strains edges are under in spherical retina
     ##' Set information about how edges on the sphere
@@ -431,7 +509,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
     ##' @param control Control argument to pass to \code{optim}
     optimiseMapping = function(alpha=4, x0=0.5, nu=1, optim.method="BFGS",
                                plot.3d=FALSE, dev.flat=NA, dev.polar=NA,
-                               control=list()) {
+                               control=list(trace=1)) {
       phi <- self$phi
       lambda <- self$lambda
       R <- self$R
@@ -451,28 +529,60 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       
       ##message(paste("Initial Atot", Atot))
       ##message(paste("Initial R", R))
+      
+      #testPhi <- read.csv(file = '~/retistructv/phi.csv', header=FALSE)
+      #testLambda <- read.csv(file = '~/retistructv/lambda.csv', header=FALSE)
+      
+      #dfPhi <- unlist(testPhi)
+      #dfPhi <- as.vector(dfPhi,'numeric')
+      #dfLambda <- unlist(testLambda)
+      #dfLambda <- as.vector(dfLambda,'numeric')
+      
+      #testphi0 <- (22/180)*pi
+      
+      #print(testphi0)
+      
+      #testp <- c(testphi0, dfPhi[-Rsett], dfLambda[-i0t])
+      
+      #phi0_range <- seq((-89/180)*pi, (89/180)*pi, length.out = 500)
+      #results <- vector("numeric", length(phi0_range))
+      
+      #for (i in 1:length(phi0_range)) {
+      #  tphi0 <- phi0_range[i]
+      #  p <- c(tphi0, phi[-Rsett], lambda[-i0t])
+      #  result <- E(p, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
+      #              alpha=alpha,  N=Nt, x0=x0, nu=nu,
+      #              Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+        #print(result)
+      #  results[i] <- result
+      #}
+      #optimal_phi0 <- phi0_range[which.min(results)]
+      #print(min(results))
 
       ## Optimisation and plotting
       opt <- list()
       opt$p <- c(phi0, phi[-Rsett], lambda[-i0t])
       opt$conv <- 1
       count <- 0
+      
       while (opt$conv) {
         ## Optimise
         opt <- stats::optim(opt$p, E, gr=dE,
                             method=optim.method,
-                            T=Tt, A=A, Atot=Atot, Cu=Cut, C=Ct, L=Lt, B=Bt, R=R,
+                            T=Tt, A=A, Atot=Atot, Cu=Cut, C=Ct, L=Lt, B=Bt,
                             alpha=alpha,  N=Nt, x0=x0, nu=nu,
-                            Rset=Rsett, i0=i0t, phi0=phi0, lambda0=lambda0, Nphi=Nphi,
+                            Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi,
                             verbose=FALSE, control=control)
-
+        
+        #print(opt$hessian)
+        
         ## Report
-        E.tot <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt,  R=R, T=Tt, A=A, Atot=Atot,
+        E.tot <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
                    alpha=alpha,  N=Nt, x0=x0, nu=nu,
-                   Rset=Rsett, i0=i0t, phi0=phi0, lambda0=lambda0, Nphi=Nphi)
-        E.l <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt,  R=R, T=Tt, A=A, Atot=Atot,
+                   Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+        E.l <- E(opt$p, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
                  alpha=0,  N=Nt, x0=x0, nu=nu,
-                 Rset=Rsett, i0=i0t, phi0=phi0, lambda0=lambda0, Nphi=Nphi)
+                 Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
 
         ft <- flipped.triangles(cbind(phi=phi, lambda=lambda), Tt, R)
         nflip <- sum(ft$flipped)
@@ -482,7 +592,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
                                  A=A[ft$flipped],
                                  a=ft$areas[ft$flipped])))
         }
-
+        
         ## Decode p vector
         phi0         <- opt$p[1]
         phi          <- rep(phi0, Nt)
@@ -506,11 +616,33 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         self$mean.strain    <- mean(abs(self$getStrains()$spherical$strain))
         self$mean.logstrain <- mean(abs(self$getStrains()$spherical$logstrain))
         self$R <- R
+         
+        message(paste("result phi0", self$phi0))
+        atot = (R^2)*(2*pi*(sin(self$phi0)+1))
+        message(paste("Result R", self$R))
+        message(paste("caculated Atot", atot))
         
-        #message(paste("result phi0", phi0))
-        #atot = (R^2)*(2*pi*(sin(phi0)+1))
-        #message(paste("Result R", self$R))
-        #message(paste("caculated Atot", atot))
+        #testPhi <- read.csv(file = '~/retistructv/phi.csv', header=FALSE)
+        #testLambda <- read.csv(file = '~/retistructv/lambda.csv', header=FALSE)
+        
+        #dfPhi <- unlist(testPhi)
+        #dfPhi <- as.vector(dfPhi,'numeric')
+        #dfLambda <- unlist(testLambda)
+        #dfLambda <- as.vector(dfLambda,'numeric')
+        
+        #testphi0 <- (22/180)*pi
+        
+        #print(testphi0)
+        
+        #testp <- c(testphi0, dfPhi[-Rsett], dfLambda[-i0t])
+        
+        #testE <- E(testp, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
+                   #alpha=alpha,  N=Nt, x0=x0, nu=nu,
+                   #Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+        
+        #message("Testing energy", testE)
+        
+        
         
         ## Plot
         if (plot.3d) {
@@ -566,8 +698,6 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## Optimisation and plotting
       opt <- list()
       opt$x <- sphere.spherical.to.sphere.cart(cbind(phi=phi, lambda=lambda), R)
-      
-      message("opt-x", opt$x)
       
       opt$conv <- 1
 
