@@ -371,11 +371,11 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       ## }
       ## Stretch mesh points to circle
       Ps <- stretchMesh(Cut, Lt, Rsett, circle(L=L.Rsett))
-      x <- Ps[,1]
-      y <- Ps[,2]
-      phi <- -pi/2 + sqrt(x^2 + y^2)*(phi0+pi/2)
+      xi <- Ps[,1]
+      yi <- Ps[,2]
+      phi <- -pi/2 + sqrt(xi^2 + yi^2)*(phi0+pi/2)
       phi[Rsett] <- phi0
-      lambda <- atan2(y, x)
+      lambda <- atan2(yi, xi)
       lambda <- lambda - lambda[i0t] + lambda0
 
       self$phi <- phi
@@ -398,38 +398,45 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       Nt <- nrow(self$Pt)
       Nphi <- Nt - length(Rsett)
       
-      alpha=4
-      x0=0.5
-      nu=1
+      #alpha=0
+      #x0=0
+      #nu=1
       
       #phi0_range <- seq((-89/180)*pi, (89/180)*pi, length.out = 2500)
       #results <- vector("numeric", length(phi0_range))
       
       #for (i in 1:length(phi0_range)) {
-        #tphi0 <- phi0_range[i]
+      #  tphi0 <- phi0_range[i]
         
-        #tphi <- -pi/2 + sqrt(x^2 + y^2)*(tphi0+pi/2)
-        #tphi[Rsett] <- tphi0
+      #  tphi <- -pi/2 + sqrt(xi^2 + yi^2)*(tphi0+pi/2)
+      #  tphi[Rsett] <- tphi0
         
-        #p <- c(tphi0, tphi[-Rsett], lambda[-i0t])
-        #result <- E(p, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
-        #            alpha=alpha,  N=Nt, x0=x0, nu=nu,
-        #            Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
-        #print(result)
-        #results[i] <- result
+      #  p <- c(tphi0, tphi[-Rsett], lambda[-i0t])
+      #  result <- E(p, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
+      #              alpha=alpha,  N=Nt, x0=x0, nu=nu,
+      #              Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+      #  print(result)
+      #  results[i] <- result
      # }
-      #optimal_phi0 <- phi0_range[which.min(results)]
+    #  optimal_phi0 <- phi0_range[which.min(results)]
       #print(min(results))
-     # print(optimal_phi0)
+      #print(optimal_phi0)
+     # message("optimal_phi0 ini", (optimal_phi0*180)/pi)
       
-      # Simulated Annealing (hyper-heuristics)
+      # Simulated Annealing
+
+      
+      
       eval_E <- function(x){
-        tphi <- -pi/2 + sqrt(x^2 + y^2)*(x+pi/2)
+        tphi <- -pi/2 + sqrt(xi^2 + yi^2)*(x+pi/2)
         tphi[Rsett] <- x
         tp = c(x, tphi[-Rsett], lambda[-i0t])
         y <- E(tp, Cu=Cut, C=Ct, L=Lt, B=Bt, T=Tt, A=A, Atot=Atot,
-                           alpha=alpha,  N=Nt, x0=x0, nu=nu,
-                           Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+                           alpha=4,  N=Nt, x0=0.5, nu=1,
+                          Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
+        #message("self-alpha", self$alpha)
+        #message("self-x0", self$x0)
+        return(y)
       }
       
       optsa <- optim_sa(fun = eval_E,
@@ -437,9 +444,9 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
                lower = c(-pi/2),
                upper = c(pi/2),
                trace = TRUE,
-               control = list(dyn_rf = FALSE,
+               control = list(dyn_rf = TRUE,
                               rf = 1.5,
-                              t0 = 1500,
+                              t0 = 900,
                               nlimit = 100,
                               r = 0.5,
                               t_min = 0.1
@@ -449,13 +456,14 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       print(optsa$par)
       print(optsa$function_value)
       
-      optimal_phi0 <- optsa$par
+      optimal_phi0 = optsa$par
       
-      self$phi0 <- optimal_phi0
-      phi <- -pi/2 + sqrt(x^2 + y^2)*(optimal_phi0+pi/2)
+      phi <- -pi/2 + sqrt(xi^2 + yi^2)*(optimal_phi0+pi/2)
       phi[Rsett] <- optimal_phi0
+
+      self$phi0 <- optimal_phi0
+      self$R <- sqrt(A.tot/(2*pi*(sin(optimal_phi0)+1)))
       self$phi <- phi
-      
     },
     ##' @description Return strains edges are under in spherical retina
     ##' Set information about how edges on the sphere
@@ -558,7 +566,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
       #}
       #optimal_phi0 <- phi0_range[which.min(results)]
       #print(min(results))
-
+      
       ## Optimisation and plotting
       opt <- list()
       opt$p <- c(phi0, phi[-Rsett], lambda[-i0t])
@@ -617,7 +625,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
         self$mean.logstrain <- mean(abs(self$getStrains()$spherical$logstrain))
         self$R <- R
          
-        message(paste("result phi0", self$phi0))
+        message(paste("result phi0", (self$phi0*180)/pi))
         atot = (R^2)*(2*pi*(sin(self$phi0)+1))
         message(paste("Result R", self$R))
         message(paste("caculated Atot", atot))
@@ -641,9 +649,7 @@ ReconstructedOutline <- R6Class("ReconstructedOutline",
                    #Rset=Rsett, i0=i0t, lambda0=lambda0, Nphi=Nphi)
         
         #message("Testing energy", testE)
-        
-        
-        
+      
         ## Plot
         if (plot.3d) {
           sphericalplot(self, datapoints=FALSE, strain=FALSE)
