@@ -41,27 +41,6 @@ Then, do one of the following from the R console:
    devtools::install_github("davidcsterratt/retistruct@v0.6.2", subdir="pkg/retistruct")
    ```
    You will need to replace `0.6.2` with the version number of the latest release.
-   
-* The two modifications of Retistruct are in the directories: modification1, modification2.
-
-Under the directory, use the following command to run Retistruct (replace the corresponding path):
-'''
-devtools::load_all(path="/retistruct/pkg/retistruct")
-'''
-'''
-retistruct()
-'''
-
-* To run the Retistruct in command line:
-'''
-retistruct.cli(dataset="~/R/x86\_64-pc-linux-gnu-library/4.2/retistruct/extdata/smi32-csv", outputdir="~/example/e", device="pdf")
-'''
-
-To run the experiment on the divese set of retina - beaddata.tgz:
-
-retistruct.batch(tldir='~/beaddata', outputdir='~/experiment')
-
-To run the experiment on SMI32 from -80 degrees to 80 degrees of initial rim angle, replace the 'retistruct-cli.R' in the corresponding Retistruct package with the 'retistruct-cli.R' in the experiment directory.
 
 Roadmap
 =======
