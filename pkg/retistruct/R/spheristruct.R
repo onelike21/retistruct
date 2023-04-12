@@ -160,7 +160,7 @@ fp <- function(x, x0) {
 ##' @return A single value, representing the energy of this particular
 ##' configuration
 ##' @author David Sterratt
-E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
+E <- function(p, Cu, C, L, B, T, A, Atot, Rset, i0, lambda0, Nphi, N,
               alpha=1, x0,  nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
   ##message(paste("area para", Atot))
@@ -177,7 +177,7 @@ E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   P <- R * cbind(cos(phi)*cos(lambda),
                  cos(phi)*sin(lambda),
                  sin(phi))
-
+  
   ## Compute elastic energy
   return(Ecart(P, Cu, L, T, A, Atot, R,
                alpha, x0, nu, verbose))
@@ -212,7 +212,7 @@ E <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
 ##' @return A vector representing the derivative of the energy of this
 ##' particular configuration with respect to the parameter vector
 ##' @author David Sterratt
-dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
+dE <- function(p, Cu, C, L, B, T, A, Atot, Rset, i0, lambda0, Nphi, N,
                alpha=1, x0, nu=1, verbose=FALSE) {
   ## Extract phis and lambdas from parameter vector
   phi0 <- p[1]
@@ -251,13 +251,6 @@ dE <- function(p, Cu, C, L, B, T, A, Atot, R, Rset, i0, phi0, lambda0, Nphi, N,
   dE.dphi    <- rowSums(dE.dp * dp.dphi)
   dE.dlambda <- rowSums(dE.dp * dp.dlambda)
   dE.dphi0   <- rowSums(dE.dp * dp.dphi0)
-  
-  #message(paste("dEdphi0-length", length(dE.dphi0)))
-  #message(paste("dEdlambda-length", length(dE.dlambda)))
-  #message(paste("dEdphi-length", length(dE.dphi)))
-  
-  ##message(paste("dEdphi0  ", dE.dphi0))
-
   ## Return, omitting uncessary indices
   return(c(dE.dphi0[1], dE.dphi[-Rset], dE.dlambda[-i0]))
 }
